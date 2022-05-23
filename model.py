@@ -257,7 +257,7 @@ class Model:
         #For Cumulative Distribution
         Graph.cumulative_distribution(data, 'SALE PRICE')
 
-        data = data[(data['SALE PRICE'] > 400000) & (data['SALE PRICE'] < 6000000)]
+        data = data[(data['SALE PRICE'] > 150000) & (data['SALE PRICE'] < 6000000)]
 
         #For BoxPlot
         Graph.boxplot(data, 'SALE PRICE', '(After)')
@@ -343,7 +343,7 @@ class Model:
         plt.show()
 
         # limiting the price-square feet ratio
-        data = data[(data['SALE PRICE'] < 1500000) & (data['GROSS SQUARE FEET'] < 5000) & (data['LAND SQUARE FEET'] < 5000)].append(data[(data['SALE PRICE'] >= 1500000)])
+        #data = data[(data['SALE PRICE'] < 1500000) & (data['GROSS SQUARE FEET'] < 5000) & (data['LAND SQUARE FEET'] < 5000)].append(data[(data['SALE PRICE'] >= 1500000)])
 
         # initializing bounderies for every borough
         num1,num2,num3,num4,num5 = (1500000, 3000000, 4000000, 3000000, 2000000)
@@ -504,7 +504,7 @@ class Model:
 
     def cost_function(self, x, theta):
         '''
-        This function is an implemintation of Cost Function
+        This function is an implementation of Cost Function
         It return the cost of the model according to the data set
         '''
         m = np.size(self.features, 0)
@@ -514,7 +514,7 @@ class Model:
 
     def scale_norm(self, data):
         '''
-        This function is an implemintation of Feature Scaling
+        This function is an implementation of Feature Scaling
         and Mean Normalization.
         It return the data set after those changes
         '''
@@ -572,24 +572,18 @@ class Model:
         # amount of training examples
         m = np.size(self.features, 0)
 
-        #going through all the training sets
-        for row in range(m):
-            # x vector
-            x = self.features[row]
-            error_size = self.error(x, self.y[row], theta)
-            error_sqrt = math.sqrt(error_size)
-            av_price_error += error_sqrt
+        result = self.error(self.features, self.y, theta)
+        result = np.sqrt(result)
+        av_price_error = np.sum(result) / m
+        av_error_percent = np.sum(result/ self.y) / m * 100
+        
 
-            av_error_percent += error_sqrt / self.y[row]
-
-            a_row = {'ERROR %' : error_sqrt / self.y[row] * 100, 'PRICE' : self.y[row]}
-            error_data = error_data.append(a_row, ignore_index = True)
-
-        av_error_percent /= m
-        av_price_error /= m
+        error_percent = result/ self.y * 100
+        error_data['PRICE'] = self.y.tolist()
+        error_data['ERROR %'] = error_percent.tolist()
 
         print(error_data)
-        result = 'average error percentage : {num}%\n'.format(num=av_error_percent * 100)
+        result = 'average error percentage : {num}%\n'.format(num=av_error_percent)
         result += 'average error in price : {num}$'.format(num=av_price_error)
         print(result)
 
@@ -620,7 +614,7 @@ class Model:
             h = self.hypothesis(x, theta)
             #going through all the percentages
             for percent in below_percent_lst:
-                if error_size < pow(percent/100 * h, 2):
+                if math.sqrt(error_size) < percent/100 * h:
                     dict_below[percent] += 1
         
         # print all the encounters per percentage
